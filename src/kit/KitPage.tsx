@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { KIT_PLANS, type KitPlan } from '../data/prompts';
 import { formatBRL } from '../utils/checkout';
+import Estrelas from './Estrelas';
 
 const M = '../media/';
 const MELHOR = KIT_PLANS.find((p) => p.id === 'melhor')!;
@@ -39,9 +41,9 @@ const ITENS = [
 ];
 
 const TEMAS = [
-  { img: 'mar-a.jpg', visual: 'VISUAL DE AQUÁRIO', t: '🌊 Mar em Corte', d: 'O oceano por dentro: navio que afunda, submarino, cardume, recife e bolhas subindo. Com o Dudu Mergulhão.' },
-  { img: 'historia-a.jpg', visual: 'VISUAL DE PEDRA E AREIA', t: '🏛️ História em Corte', d: 'Monumentos antigos por dentro: pirâmide com câmaras secretas, castelos, catacumbas e o chão em camadas de épocas. Com a Doutora Duna.' },
-  { img: 'corpo-1.jpg', visual: 'VISUAL DE MASSINHA', t: '❤️ Corpo em Corte', d: 'O corpo humano por dentro: pele em camadas, sangue no vaso, glóbulo branco contra vírus e osso que cola. Com o Doutor Miúdo.' },
+  { img: 'mar-a.jpg', visual: 'Visual de aquário', t: '🌊 Mar em Corte', d: 'O oceano por dentro: navio que afunda, submarino, cardume, recife e bolhas subindo. Com o Dudu Mergulhão.' },
+  { img: 'historia-a.jpg', visual: 'Visual de pedra e areia', t: '🏛️ História em Corte', d: 'Monumentos antigos por dentro: pirâmide com câmaras secretas, castelos, catacumbas e o chão em camadas de épocas. Com a Doutora Duna.' },
+  { img: 'corpo-1.jpg', visual: 'Visual de massinha', t: '❤️ Corpo em Corte', d: 'O corpo humano por dentro: pele em camadas, sangue no vaso, glóbulo branco contra vírus e osso que cola. Com o Doutor Miúdo.' },
 ];
 
 const FAQ = [
@@ -57,12 +59,60 @@ const FAQ = [
   { q: 'O kit recebe atualizações?', r: 'O kit é entregue completo, com tudo pronto para usar no dia da compra. Não depende de atualizações para funcionar.' },
 ];
 
+const FITA = ['Sem programar', 'Sem editar vídeo', 'Sem mostrar o rosto', 'Vídeo pronto para postar', 'Narração sincronizada', '3 temas de bônus'];
+
 const reais = (c: number) => formatBRL(c).replace(',00', '');
+
+/* Aparece suave quando entra na tela */
+function Revelar({ children, atraso = 0, className = '' }: { children: ReactNode; atraso?: number; className?: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 26 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6, delay: atraso, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* Celular que inclina seguindo o mouse */
+function Celular({ children, className = '' }: { children: ReactNode; className?: string }) {
+  const mover = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    e.currentTarget.style.setProperty('--ry', `${(x * 16).toFixed(2)}deg`);
+    e.currentTarget.style.setProperty('--rx', `${(-y * 12).toFixed(2)}deg`);
+  };
+  const sair = (e: PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.style.setProperty('--ry', '0deg');
+    e.currentTarget.style.setProperty('--rx', '0deg');
+  };
+  return (
+    <div className={`celular ${className}`} onPointerMove={mover} onPointerLeave={sair}>
+      {children}
+    </div>
+  );
+}
+
+function Titulo({ rotulo, children, sub }: { rotulo: string; children: ReactNode; sub?: ReactNode }) {
+  return (
+    <Revelar className="mx-auto max-w-3xl text-center">
+      <p className="rotulo">{rotulo}</p>
+      <h2 className="titulo mt-3 text-4xl text-[var(--texto)] sm:text-5xl [text-wrap:balance]">{children}</h2>
+      {sub && <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-[var(--texto-2)]">{sub}</p>}
+    </Revelar>
+  );
+}
 
 function Item({ f }: { f: string }) {
   if (f.startsWith('Tudo do')) {
     return (
-      <li className="flex gap-2.5 font-black text-[var(--marinho)]">
+      <li className="flex gap-2.5 font-black text-[var(--amarelo-claro)]">
         <span className="text-[var(--verde)]">✔</span>
         <span>{f}</span>
       </li>
@@ -70,14 +120,14 @@ function Item({ f }: { f: string }) {
   }
   if (f.startsWith('Bônus')) {
     return (
-      <li className="flex gap-2.5 rounded-xl bg-[#fff1e3] px-2.5 py-1.5 font-black text-[var(--laranja-escuro)]">
+      <li className="flex gap-2.5 rounded-xl border border-[rgba(255,122,26,0.35)] bg-[rgba(255,122,26,0.12)] px-2.5 py-1.5 font-black text-[#ffb27a]">
         <span>🎁</span>
         <span>{f}</span>
       </li>
     );
   }
   return (
-    <li className="flex gap-2.5">
+    <li className="flex gap-2.5 text-[var(--texto-2)]">
       <span className="text-[var(--verde)]">✔</span>
       <span>{f}</span>
     </li>
@@ -91,30 +141,30 @@ function Plano({ plano }: { plano: KitPlan }) {
   const pct = plano.listPriceCents ? Math.round((economia / plano.listPriceCents) * 100) : 0;
   return (
     <article
-      className={`cartao plano flex flex-col p-7 ${destaque ? 'plano-destaque' : ''} ${avancado ? 'plano-avancado' : ''}`}
+      className={`plano flex flex-col p-7 ${destaque ? 'vidro-amarelo plano-destaque' : 'vidro'} ${avancado ? 'plano-avancado' : ''}`}
     >
       {plano.badge && (
         <span
-          className={`pilula absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-white ${destaque ? 'bg-[var(--laranja)]' : 'bg-[var(--marinho)]'}`}
+          className={`pilula absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap ${destaque ? 'bg-[var(--amarelo)] text-[var(--noite)]' : 'bg-[#3b5bdb] text-white'}`}
         >
           {plano.badge}
         </span>
       )}
-      <h3 className={`titulo text-3xl ${destaque ? 'text-[var(--laranja)]' : 'text-[var(--marinho)]'}`}>{plano.name}</h3>
-      <p className="mt-1 text-sm text-[#6b5646]">{plano.tagline}</p>
+      <h3 className={`titulo text-3xl ${destaque ? 'brilho-amarelo' : 'text-[var(--texto)]'}`}>{plano.name}</h3>
+      <p className="mt-1 text-sm text-[var(--texto-3)]">{plano.tagline}</p>
       <div className="mt-5">
         {plano.listPriceCents && (
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <span className="text-lg font-extrabold text-[#9a8574]">
-              de <s className="decoration-[#c0392b] decoration-[3px]">{reais(plano.listPriceCents)}</s> por
+            <span className="text-lg font-extrabold text-[var(--texto-3)]">
+              de <s className="decoration-[var(--vermelho)] decoration-[3px]">{reais(plano.listPriceCents)}</s> por
             </span>
-            <span className="rounded-full bg-[#c0392b] px-2.5 py-0.5 text-xs font-black text-white">-{pct}%</span>
+            <span className="rounded-full bg-[var(--vermelho)] px-2.5 py-0.5 text-xs font-black text-white">-{pct}%</span>
           </div>
         )}
-        <span className={`titulo text-5xl ${destaque ? 'text-[var(--laranja)]' : 'text-[var(--tinta)]'}`}>{reais(plano.priceCents)}</span>
-        <span className="mt-1 block text-xs font-extrabold uppercase tracking-wider text-[#6b5646]">pagamento único</span>
+        <span className={`titulo text-5xl ${destaque ? 'text-[var(--amarelo)]' : 'text-[var(--texto)]'}`}>{reais(plano.priceCents)}</span>
+        <span className="mt-1 block font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--texto-3)]">pagamento único</span>
         {economia > 0 && (
-          <span className="mt-2 inline-block rounded-lg bg-[#e8f5e1] px-2.5 py-1 text-sm font-black text-[var(--verde)]">
+          <span className="mt-2 inline-block rounded-lg bg-[rgba(111,208,74,0.14)] px-2.5 py-1 text-sm font-black text-[var(--verde)]">
             Você economiza {reais(economia)}
           </span>
         )}
@@ -124,7 +174,7 @@ function Plano({ plano }: { plano: KitPlan }) {
           <Item key={f} f={f} />
         ))}
       </ul>
-      <a href={plano.checkoutUrl} className={`botao mt-7 w-full ${destaque ? 'pulsar' : 'botao-marinho'}`}>
+      <a href={plano.checkoutUrl} className={`botao mt-7 w-full ${destaque ? 'pulsar' : 'botao-vidro'}`}>
         {plano.cta}
       </a>
     </article>
@@ -134,37 +184,42 @@ function Plano({ plano }: { plano: KitPlan }) {
 function Pergunta({ q, r }: { q: string; r: string }) {
   const [aberta, setAberta] = useState(false);
   return (
-    <div className="cartao overflow-hidden">
+    <div className={`vidro overflow-hidden transition-colors ${aberta ? 'border-[rgba(255,194,42,0.4)]' : ''}`}>
       <button
         type="button"
         aria-expanded={aberta}
         onClick={() => setAberta((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-[17px] font-extrabold text-[var(--marinho)] cursor-pointer"
+        className="flex w-full cursor-pointer items-center justify-between gap-4 px-6 py-5 text-left text-[17px] font-extrabold text-[var(--texto)]"
       >
         <span>{q}</span>
-        <span className={`titulo text-2xl text-[var(--laranja)] transition-transform ${aberta ? 'rotate-45' : ''}`}>+</span>
+        <span className={`titulo text-2xl text-[var(--amarelo)] transition-transform ${aberta ? 'rotate-45' : ''}`}>+</span>
       </button>
-      {aberta && <p className="px-6 pb-5 text-[15px] leading-relaxed text-[#4a3a2c]">{r}</p>}
+      {aberta && <p className="px-6 pb-5 text-[15px] leading-relaxed text-[var(--texto-2)]">{r}</p>}
     </div>
   );
 }
 
-function Video({ nome, titulo, legenda }: { nome: string; titulo: string; legenda: string }) {
+function Video({ nome, titulo, legenda, atraso }: { nome: string; titulo: string; legenda: string; atraso: number }) {
   return (
-    <figure className="mx-auto w-full max-w-[300px]">
-      <div className="celular">
-        <video controls preload="none" playsInline poster={`${M}${nome}.jpg`} src={`${M}${nome}.mp4`} />
-      </div>
-      <figcaption className="mt-5 text-center">
-        <span className="titulo block text-2xl text-[var(--marinho)]">{titulo}</span>
-        <span className="mt-1 block text-sm text-[#4a3a2c]">{legenda}</span>
-      </figcaption>
-    </figure>
+    <Revelar atraso={atraso}>
+      <figure className="mx-auto w-full max-w-[300px]">
+        <div className="flutuar" style={{ animationDelay: `${atraso * 3}s` }}>
+          <Celular>
+            <video controls preload="none" playsInline poster={`${M}${nome}.jpg`} src={`${M}${nome}.mp4`} />
+          </Celular>
+        </div>
+        <figcaption className="mt-7 text-center">
+          <span className="titulo block text-2xl text-[var(--texto)]">{titulo}</span>
+          <span className="mt-1 block text-sm text-[var(--texto-2)]">{legenda}</span>
+        </figcaption>
+      </figure>
+    </Revelar>
   );
 }
 
 export default function KitPage() {
   const [barra, setBarra] = useState(false);
+  const leque = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ver = () => {
@@ -174,6 +229,9 @@ export default function KitPage() {
         ? planos.getBoundingClientRect().top < window.innerHeight && planos.getBoundingClientRect().bottom > 0
         : false;
       setBarra(passou && !nosPlanos);
+      // o leque de celulares abre conforme a página rola
+      const abre = Math.min(1, window.scrollY / 420);
+      leque.current?.style.setProperty('--abre', abre.toFixed(3));
     };
     ver();
     window.addEventListener('scroll', ver, { passive: true });
@@ -181,240 +239,321 @@ export default function KitPage() {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen">
+      <Estrelas />
+
       {/* Topo */}
-      <header className="mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-4 sm:px-5 sm:py-5 sm:px-8">
-        <a href="../" className="flex items-center gap-2.5 no-underline">
-          <img src={`${M}vo-prompo.jpg`} alt="" className="h-9 w-9 sm:h-11 sm:w-11 rounded-full border-[3px] border-white object-cover object-top shadow" />
-          <span className="titulo whitespace-nowrap text-[17px] text-[var(--marinho)] sm:text-2xl">
-            Prompo<span className="text-[var(--laranja)]">-Constroe</span>
-          </span>
-        </a>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <a href="../" className="voltar px-3.5 py-2 text-base sm:px-4 sm:py-2.5 sm:text-base" aria-label="Voltar para a home da Prompta">
-            <span aria-hidden="true">←</span><span className="hidden sm:inline"> Voltar para a Home</span>
+      <header className="vidro-nav sticky top-0 z-40">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-3 sm:px-8">
+          <a href="../" className="flex items-center gap-2.5 no-underline">
+            <img src={`${M}vo-prompo.jpg`} alt="" className="h-9 w-9 rounded-full border-2 border-[var(--amarelo)] object-cover object-top sm:h-10 sm:w-10" />
+            <span className="titulo whitespace-nowrap text-[17px] text-[var(--texto)] sm:text-2xl">
+              Prompo<span className="text-[var(--amarelo)]">-Constroe</span>
+            </span>
           </a>
-          <a href="#planos" className="botao whitespace-nowrap px-3.5 py-2 text-sm sm:px-5 sm:py-2.5 sm:text-base">Quero o kit</a>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a href="../" className="voltar px-3.5 py-2 text-base sm:px-4" aria-label="Voltar para a home da Prompta">
+              <span aria-hidden="true">←</span>
+              <span className="hidden sm:inline"> Voltar para a Home</span>
+            </a>
+            <a href="#planos" className="botao whitespace-nowrap px-3.5 py-2 text-sm sm:px-5 sm:py-2.5 sm:text-base">
+              Quero o kit
+            </a>
+          </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-12 px-5 pb-20 pt-6 sm:px-8 lg:grid-cols-2 lg:pt-10">
-        <div>
-          <span className="pilula bg-[var(--marinho)] text-white">Kit para Claude Code</span>
-          <h1 className="titulo mt-5 text-[44px] text-[var(--tinta)] sm:text-6xl lg:text-[68px]">
-            Vídeos 3D de obra em corte que <span className="text-[var(--laranja)]">prendem</span> até o fim.
+      <section className="mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-14 px-5 pb-24 pt-12 sm:px-8 lg:grid-cols-2 lg:pt-16">
+        <Revelar>
+          <p className="rotulo">Kit de prompts · 01 · Claude Code</p>
+          <h1 className="titulo mt-4 text-[44px] text-[var(--texto)] sm:text-6xl lg:text-[68px]">
+            Vídeos 3D de obra em corte que <span className="brilho-amarelo">prendem</span> até o fim.
           </h1>
-          <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-[#3a2a1c]">
-            Você <strong className="text-[var(--marinho)]">conversa com o Claude</strong> e o Vô Prompo constrói. Roteiro, cenas em 3D, narração sincronizada, sons, capa e legenda saem <span className="marca font-black">prontos para postar</span>.
+          <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-[var(--texto-2)]">
+            Você <strong className="text-[var(--amarelo-claro)]">conversa com o Claude</strong> e o Vô Prompo constrói. Roteiro, cenas em 3D, narração sincronizada, sons, capa e legenda saem{' '}
+            <span className="marca font-black">prontos para postar</span>.
           </p>
           <ul className="mt-6 flex flex-wrap gap-2.5">
             {['Sem programar', 'Sem editar vídeo', 'Sem mostrar o rosto'].map((t) => (
-              <li key={t} className="rounded-full bg-white px-4 py-2 text-sm font-extrabold text-[var(--marinho)] shadow-[0_3px_0_rgba(36,23,13,0.12)]">
+              <li key={t} className="chip">
                 <span className="text-[var(--verde)]">✔</span> {t}
               </li>
             ))}
           </ul>
-          <a href="#planos" className="botao pulsar mt-8 text-[22px]">Quero meu kit agora</a>
-          <p className="mt-4 text-[15px] font-extrabold text-[var(--tinta)]">
-            🔥 Melhor Kit de <s className="text-[#9a8574] decoration-[#c0392b] decoration-2">{reais(MELHOR.listPriceCents!)}</s>{' '}
-            por <span className="text-lg text-[var(--laranja-escuro)]">{reais(MELHOR.priceCents)}</span>
-          </p>
-          <p className="mt-2 text-sm font-extrabold text-[#5a4634]">
-            🛡️ 7 dias de garantia · acesso na hora · 🎁 3 temas de bônus
-          </p>
-        </div>
-
-        <div className="relative mx-auto w-full max-w-[330px]">
-          <div className="celular">
-            <video autoPlay muted loop playsInline poster={`${M}032c.jpg`} src={`${M}032c.mp4`} aria-label="Trecho de um vídeo feito com o kit: prédio em corte durante um terremoto" />
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <a href="#planos" className="botao pulsar text-[22px]">Quero meu kit agora</a>
+            <a href="#videos" className="voltar px-5 py-3.5 text-base">▶ Ver os vídeos</a>
           </div>
-          <div className="balancar absolute -right-6 top-10 rounded-2xl bg-[var(--laranja)] px-3.5 py-2.5 text-center text-white shadow-lg sm:-right-12">
+          <p className="mt-5 text-[15px] font-extrabold text-[var(--texto)]">
+            🔥 Melhor Kit de <s className="text-[var(--texto-3)] decoration-[var(--vermelho)] decoration-2">{reais(MELHOR.listPriceCents!)}</s>{' '}
+            por <span className="text-lg text-[var(--amarelo)]">{reais(MELHOR.priceCents)}</span>
+          </p>
+          <p className="mt-2 font-mono text-xs tracking-wide text-[var(--texto-3)]">
+            7 dias de garantia · acesso na hora · 3 temas de bônus
+          </p>
+        </Revelar>
+
+        <div ref={leque} className="leque">
+          <div aria-hidden="true" className="holofote pointer-events-none absolute -inset-16" />
+          <div className="leque-item leque-esq">
+            <div className="flutuar" style={{ animationDelay: '-2s' }}>
+              <Celular>
+                <video autoPlay muted loop playsInline poster={`${M}046c.jpg`} src={`${M}046c.mp4`} aria-hidden="true" />
+              </Celular>
+            </div>
+          </div>
+          <div className="leque-item leque-dir">
+            <div className="flutuar" style={{ animationDelay: '-4s' }}>
+              <Celular>
+                <img src={`${M}mar-a.jpg`} alt="" aria-hidden="true" />
+              </Celular>
+            </div>
+          </div>
+          <div className="leque-item leque-centro">
+            <div className="flutuar">
+              <Celular>
+                <video autoPlay muted loop playsInline poster={`${M}032c.jpg`} src={`${M}032c.mp4`} aria-label="Trecho de um vídeo feito com o kit: prédio em corte durante um terremoto" />
+              </Celular>
+            </div>
+          </div>
+          <div className="balancar absolute -right-2 top-[8%] z-10 rounded-2xl bg-[var(--laranja)] px-3.5 py-2.5 text-center text-white shadow-[0_10px_30px_-8px_rgba(255,122,26,0.7)] sm:-right-8">
             <span className="titulo block text-2xl leading-none">+3 temas</span>
             <span className="text-xs font-extrabold">de bônus 🎁</span>
           </div>
-          <img
-            src={`${M}vo-prompo.jpg`}
-            alt="Vô Prompo, o mascote do kit"
-            className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full border-[5px] border-white object-cover object-top shadow-xl sm:-left-14 sm:h-32 sm:w-32"
-          />
+          <div className="absolute -left-2 bottom-[4%] z-10 flex items-center gap-2.5 rounded-full border border-[rgba(255,194,42,0.4)] bg-[rgba(4,6,13,0.85)] py-1.5 pl-1.5 pr-4 shadow-xl sm:-left-6">
+            <img src={`${M}vo-prompo.jpg`} alt="Vô Prompo, o mascote do kit" className="h-12 w-12 rounded-full border-2 border-[var(--amarelo)] object-cover object-top" />
+            <span className="leading-tight">
+              <span className="block text-sm font-black text-[var(--texto)]">Vô Prompo</span>
+              <span className="block font-mono text-[11px] text-[var(--amarelo)]">mestre de obras</span>
+            </span>
+          </div>
         </div>
       </section>
 
+      {/* Fita de obra */}
+      <div className="fita -rotate-1 py-3" aria-hidden="true">
+        <div className="fita-trilho">
+          {[0, 1].map((k) => (
+            <div key={k} className="flex shrink-0 items-center">
+              {FITA.map((t) => (
+                <span key={t} className="titulo whitespace-nowrap px-6 text-xl uppercase">
+                  {t} <span className="pl-6">✦</span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Feito com o kit */}
-      <section className="bg-[var(--creme)] py-20">
+      <section id="videos" className="scroll-mt-20 py-24">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
-          <div className="text-center">
-            <span className="pilula bg-[var(--amarelo)] text-[var(--tinta)]">Feito com o kit</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">A terra <span className="text-[var(--laranja)]">cortada ao meio</span></h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-[#4a3a2c]">
-              Você vê <span className="marca font-black text-[var(--marinho)]">tudo o que acontece embaixo do chão</span> e dentro da obra, em escala, com o jeitão de brinquedo do Vô Prompo. <strong className="text-[var(--laranja-escuro)]">Aperte o play e ouça com som.</strong>
+          <Titulo
+            rotulo="Feito com o kit"
+            sub={
+              <>
+                Você vê <span className="marca font-black">tudo o que acontece embaixo do chão</span> e dentro da obra, em escala, com o jeitão de brinquedo do Vô Prompo.{' '}
+                <strong className="text-[var(--amarelo)]">Aperte o play e ouça com som.</strong>
+              </>
+            }
+          >
+            A terra <span className="brilho-amarelo">cortada ao meio</span>
+          </Titulo>
+          <div className="mt-14 grid grid-cols-1 gap-14 sm:grid-cols-2">
+            <Video nome="032" titulo="O prédio que não cai" legenda="Estacas, isolador de borracha e uma bola de aço no topo" atraso={0} />
+            <Video nome="046" titulo="A Arena Castelão por dentro" legenda="Lugares reais e estádios, no Melhor Kit" atraso={0.15} />
+          </div>
+          <Revelar>
+            <p className="mx-auto mt-14 max-w-xl text-center text-sm text-[var(--texto-3)]">
+              Tudo isso foi feito <strong className="text-[var(--texto)]">só conversando com o Claude</strong>, com este kit. Nenhum programa de edição, nenhuma linha de código escrita à mão.
             </p>
-          </div>
-          <div className="mt-12 grid grid-cols-1 gap-12 sm:grid-cols-2">
-            <Video nome="032" titulo="O prédio que não cai" legenda="Estacas, isolador de borracha e uma bola de aço no topo" />
-            <Video nome="046" titulo="A Arena Castelão por dentro" legenda="Lugares reais e estádios, no Melhor Kit" />
-          </div>
-          <p className="mx-auto mt-12 max-w-xl text-center text-sm text-[#6b5646]">
-            Tudo isso foi feito <strong className="text-[var(--marinho)]">só conversando com o Claude</strong>, com este kit. <span className="marca-laranja font-black">Nenhum programa de edição, nenhuma linha de código</span> escrita à mão.
-          </p>
+          </Revelar>
         </div>
       </section>
 
       {/* Como funciona */}
-      <section className="bg-[var(--creme)] pb-24">
+      <section className="py-24">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
-          <div className="text-center">
-            <span className="pilula bg-[var(--marinho)] text-white">Como funciona</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">Da ideia ao vídeo pronto, <span className="text-[var(--laranja)]">conversando</span></h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-[#4a3a2c]">
-              O kit é uma pasta que você abre no Claude. Ele segue a linha de montagem e <span className="marca font-black text-[var(--marinho)]">você só aprova</span>.
-            </p>
-          </div>
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {PASSOS.map((p) => (
-              <article key={p.n} className="cartao p-7">
-                <span className="titulo flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--amarelo)] text-2xl">{p.n}</span>
-                <h3 className="titulo mt-5 text-2xl text-[var(--marinho)]">{p.titulo}</h3>
-                <p className="mt-2.5 text-[15px] leading-relaxed text-[#4a3a2c]">{p.texto}</p>
-              </article>
+          <Titulo
+            rotulo="Como funciona"
+            sub={
+              <>
+                O kit é uma pasta que você abre no Claude. Ele segue a linha de montagem e <span className="marca font-black">você só aprova</span>.
+              </>
+            }
+          >
+            Da ideia ao vídeo pronto, <span className="brilho-amarelo">conversando</span>
+          </Titulo>
+          <div className="relative mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div aria-hidden="true" className="tracejado absolute left-[16%] right-[16%] top-[52px] hidden h-[2px] md:block" />
+            {PASSOS.map((p, i) => (
+              <Revelar key={p.n} atraso={i * 0.12}>
+                <article className="vidro relative h-full p-7">
+                  <span className="titulo relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--amarelo)] text-3xl text-[var(--noite)] shadow-[0_0_30px_-4px_rgba(255,194,42,0.6)]">
+                    {p.n}
+                  </span>
+                  <h3 className="titulo mt-5 text-2xl text-[var(--texto)]">{p.titulo}</h3>
+                  <p className="mt-2.5 text-[15px] leading-relaxed text-[var(--texto-2)]">{p.texto}</p>
+                </article>
+              </Revelar>
             ))}
           </div>
         </div>
       </section>
 
       {/* O que vem no kit */}
-      <section className="bg-[var(--marinho)] py-24 text-white">
+      <section className="py-24">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
-          <div className="text-center">
-            <span className="pilula bg-[var(--amarelo)] text-[var(--tinta)]">O que vem no kit</span>
-            <h2 className="titulo mt-4 text-4xl sm:text-5xl">Uma construtora inteira <span className="text-[var(--amarelo)]">numa pasta</span></h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">Tudo pronto para abrir no Claude e <strong className="text-[var(--amarelo)]">começar hoje</strong>.</p>
-          </div>
-          <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {ITENS.map((i) => (
-              <article key={i.t} className="rounded-[22px] border border-white/15 bg-white/[0.07] p-6">
-                <span className="text-3xl" aria-hidden="true">{i.e}</span>
-                <h3 className="titulo mt-3 text-xl text-[var(--amarelo-claro)]">{i.t}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-white/80">{i.d}</p>
-              </article>
+          <Titulo rotulo="O que vem no kit" sub={<>Tudo pronto para abrir no Claude e <strong className="text-[var(--amarelo)]">começar hoje</strong>.</>}>
+            Uma construtora inteira <span className="brilho-amarelo">numa pasta</span>
+          </Titulo>
+          <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {ITENS.map((i, k) => (
+              <Revelar key={i.t} atraso={(k % 3) * 0.08}>
+                <article className="vidro group h-full p-6 transition-[border-color,transform] duration-200 hover:-translate-y-1 hover:border-[rgba(255,194,42,0.4)]">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-[rgba(255,194,42,0.3)] bg-[rgba(255,194,42,0.1)] text-2xl" aria-hidden="true">
+                    {i.e}
+                  </span>
+                  <h3 className="titulo mt-4 text-xl text-[var(--amarelo-claro)]">{i.t}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--texto-2)]">{i.d}</p>
+                </article>
+              </Revelar>
             ))}
           </div>
         </div>
       </section>
 
       {/* Bônus */}
-      <section className="bg-[var(--marinho-escuro)] py-24 text-white">
+      <section className="py-24">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
-          <div className="text-center">
-            <span className="pilula bg-[var(--laranja)] text-white">🎁 Bônus</span>
-            <h2 className="titulo mt-4 text-4xl sm:text-5xl">Mais <span className="text-[var(--laranja)]">3 temas</span>, <span className="text-[var(--amarelo)]">3 canais novos</span></h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">
-              Cada tema tem o próprio personagem, o próprio visual e o mesmo jeito fácil de fazer vídeo que você já vai conhecer.
-            </p>
-          </div>
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {TEMAS.map((t) => (
-              <article key={t.t} className="overflow-hidden rounded-[22px] bg-white text-[var(--tinta)]">
-                <img src={`${M}${t.img}`} alt={t.t} loading="lazy" className="h-56 w-full object-cover" />
-                <div className="p-6">
-                  <span className="text-xs font-black tracking-[1.4px] text-[var(--laranja)]">{t.visual}</span>
-                  <h3 className="titulo mt-1.5 text-2xl text-[var(--marinho)]">{t.t}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-[#4a3a2c]">{t.d}</p>
-                </div>
-              </article>
+          <Titulo
+            rotulo="🎁 Bônus no Melhor Kit e no Avançado"
+            sub="Cada tema tem o próprio personagem, o próprio visual e o mesmo jeito fácil de fazer vídeo que você já vai conhecer."
+          >
+            Mais <span className="text-[var(--laranja)]">3 temas</span>, <span className="brilho-amarelo">3 canais novos</span>
+          </Titulo>
+          <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3">
+            {TEMAS.map((t, k) => (
+              <Revelar key={t.t} atraso={k * 0.12}>
+                <article className="text-center">
+                  <div className="flutuar mx-auto w-[62%] max-w-[230px]" style={{ animationDelay: `${-k * 1.6}s` }}>
+                    <Celular>
+                      <img src={`${M}${t.img}`} alt={t.t} loading="lazy" />
+                    </Celular>
+                  </div>
+                  <p className="rotulo mt-7">{t.visual}</p>
+                  <h3 className="titulo mt-1.5 text-2xl text-[var(--texto)]">{t.t}</h3>
+                  <p className="mx-auto mt-2 max-w-xs text-[15px] leading-relaxed text-[var(--texto-2)]">{t.d}</p>
+                </article>
+              </Revelar>
             ))}
           </div>
-          <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-white/70">
-            Vem de <strong className="text-[var(--amarelo)]">bônus</strong> no Melhor Kit e no Avançado. Cada tema traz peças 3D, personagem, fórmula do roteiro e 30 ideias de gancho.
-          </p>
+          <Revelar>
+            <p className="mx-auto mt-12 max-w-2xl text-center text-sm text-[var(--texto-3)]">
+              Cada tema traz peças 3D, personagem, fórmula do roteiro e 30 ideias de gancho.
+            </p>
+          </Revelar>
         </div>
       </section>
 
       {/* Você vai precisar */}
-      <section className="bg-[var(--creme)] py-24">
+      <section className="py-24">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
-          <div className="text-center">
-            <span className="pilula bg-[var(--amarelo)] text-[var(--tinta)]">Você vai precisar</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">Só <span className="text-[var(--laranja)]">três coisas</span></h2>
-          </div>
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Titulo rotulo="Você vai precisar">
+            Só <span className="brilho-amarelo">três coisas</span>
+          </Titulo>
+          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
               { e: '🤖', t: 'Claude Pro', d: 'O Claude Code é quem monta os vídeos. O plano grátis não serve. A partir de US$ 20 por mês.' },
               { e: '🎙️', t: 'ElevenLabs', d: 'Para a voz da narração. Dá para testar de graça antes de assinar.' },
               { e: '💻', t: 'Um computador', d: 'Windows ou Mac. Não precisa ser computador gamer.' },
-            ].map((c) => (
-              <article key={c.t} className="cartao p-7 text-center">
-                <span className="text-4xl" aria-hidden="true">{c.e}</span>
-                <h3 className="titulo mt-3 text-2xl text-[var(--marinho)]">{c.t}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-[#4a3a2c]">{c.d}</p>
-              </article>
+            ].map((c, k) => (
+              <Revelar key={c.t} atraso={k * 0.1}>
+                <article className="vidro h-full p-7 text-center">
+                  <span className="text-4xl" aria-hidden="true">{c.e}</span>
+                  <h3 className="titulo mt-3 text-2xl text-[var(--texto)]">{c.t}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--texto-2)]">{c.d}</p>
+                </article>
+              </Revelar>
             ))}
           </div>
 
-          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2">
-            <article className="cartao p-7">
-              <h3 className="titulo text-2xl text-[var(--verde)]">É para você se…</h3>
-              <ul className="mt-4 space-y-2.5 text-[15px]">
-                {['Quer um perfil de vídeos curtos sem aparecer', 'Não sabe programar nem editar vídeo', 'Gosta de obra, engenharia, estádios, mar, história ou corpo humano', 'Quer postar com constância, 3 a 5 vídeos por semana'].map((t) => (
-                  <li key={t} className="flex gap-2.5"><span className="text-[var(--verde)]">✔</span>{t}</li>
-                ))}
-              </ul>
-            </article>
-            <article className="cartao p-7">
-              <h3 className="titulo text-2xl text-[#c0392b]">Não é para você se…</h3>
-              <ul className="mt-4 space-y-2.5 text-[15px]">
-                {['Procura dinheiro rápido sem postar', 'Não vai assinar o Claude Pro', 'Quer vídeos realistas de cinema', 'Só usa celular (precisa de computador)'].map((t) => (
-                  <li key={t} className="flex gap-2.5"><span className="text-[#c0392b]">✖</span>{t}</li>
-                ))}
-              </ul>
-            </article>
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Revelar>
+              <article className="vidro h-full border-[rgba(111,208,74,0.3)] p-7">
+                <h3 className="titulo text-2xl text-[var(--verde)]">É para você se…</h3>
+                <ul className="mt-4 space-y-2.5 text-[15px] text-[var(--texto-2)]">
+                  {['Quer um perfil de vídeos curtos sem aparecer', 'Não sabe programar nem editar vídeo', 'Gosta de obra, engenharia, estádios, mar, história ou corpo humano', 'Quer postar com constância, 3 a 5 vídeos por semana'].map((t) => (
+                    <li key={t} className="flex gap-2.5">
+                      <span className="text-[var(--verde)]">✔</span>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </Revelar>
+            <Revelar atraso={0.1}>
+              <article className="vidro h-full border-[rgba(255,107,91,0.3)] p-7">
+                <h3 className="titulo text-2xl text-[var(--vermelho)]">Não é para você se…</h3>
+                <ul className="mt-4 space-y-2.5 text-[15px] text-[var(--texto-2)]">
+                  {['Procura dinheiro rápido sem postar', 'Não vai assinar o Claude Pro', 'Quer vídeos realistas de cinema', 'Só usa celular (precisa de computador)'].map((t) => (
+                    <li key={t} className="flex gap-2.5">
+                      <span className="text-[var(--vermelho)]">✖</span>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </Revelar>
           </div>
         </div>
       </section>
 
       {/* Planos */}
-      <section id="planos" className="scroll-mt-4 bg-[var(--amarelo)] py-24">
-        <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
-          <div className="text-center">
-            <span className="pilula bg-[var(--marinho)] text-white">Escolha o seu plano</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--tinta)] sm:text-5xl">Comece a postar <span className="text-[var(--marinho)] underline decoration-[var(--laranja)] decoration-[6px] underline-offset-[6px]">hoje</span></h2>
-            <p className="mx-auto mt-3 max-w-xl text-lg text-[#3a2a1c]">
-              <strong className="text-[var(--marinho)]">Pagamento único.</strong> Sem mensalidade do kit.
-            </p>
-            <div className="mx-auto mt-6 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl bg-[var(--marinho)] px-5 py-3 text-white shadow-[0_5px_0_var(--marinho-escuro)]">
-              <span className="font-black">🔥 Preço de lançamento:</span>
-              <span>Melhor Kit de <s className="text-white/60 decoration-[#ff6b5b] decoration-2">{reais(MELHOR.listPriceCents!)}</s> por</span>
+      <section id="planos" className="relative scroll-mt-16 py-24">
+        <div aria-hidden="true" className="holofote pointer-events-none absolute inset-0" />
+        <div className="relative mx-auto max-w-[1180px] px-5 sm:px-8">
+          <Titulo rotulo="Escolha o seu plano" sub={<><strong className="text-[var(--texto)]">Pagamento único.</strong> Sem mensalidade do kit.</>}>
+            Comece a postar <span className="brilho-amarelo">hoje</span>
+          </Titulo>
+          <Revelar className="mt-6 text-center">
+            <div className="vidro-amarelo inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-5 py-3">
+              <span className="font-black text-[var(--texto)]">🔥 Preço de lançamento:</span>
+              <span className="text-[var(--texto-2)]">
+                Melhor Kit de <s className="decoration-[var(--vermelho)] decoration-2">{reais(MELHOR.listPriceCents!)}</s> por
+              </span>
               <span className="titulo text-2xl text-[var(--amarelo)]">{reais(MELHOR.priceCents)}</span>
             </div>
-          </div>
+          </Revelar>
           <div className="planos-grade mt-16 grid grid-cols-1 gap-10 lg:grid-cols-3 lg:items-start lg:gap-8">
             {KIT_PLANS.map((p) => (
               <Plano key={p.id} plano={p} />
             ))}
           </div>
 
-          <div className="cartao mx-auto mt-14 flex max-w-3xl flex-col items-center gap-5 p-7 text-center sm:flex-row sm:text-left">
-            <div className="flex h-24 w-24 shrink-0 flex-col items-center justify-center rounded-full bg-[var(--marinho)] text-white">
-              <span className="titulo text-4xl leading-none">7</span>
-              <span className="text-[11px] font-black uppercase">dias</span>
+          <Revelar>
+            <div className="vidro mx-auto mt-14 flex max-w-3xl flex-col items-center gap-5 p-7 text-center sm:flex-row sm:text-left">
+              <div className="flex h-24 w-24 shrink-0 flex-col items-center justify-center rounded-full border-2 border-[var(--amarelo)] text-[var(--amarelo)] shadow-[0_0_30px_-6px_rgba(255,194,42,0.6)]">
+                <span className="titulo text-4xl leading-none">7</span>
+                <span className="text-[11px] font-black uppercase">dias</span>
+              </div>
+              <p className="text-[16px] leading-relaxed text-[var(--texto-2)]">
+                <strong className="titulo text-xl text-[var(--texto)]">
+                  Garantia de <span className="text-[var(--amarelo)]">7 dias</span> em todos os planos.
+                </strong>
+                <br />
+                Se não gostar, peça o reembolso pela Kiwify dentro de 7 dias e <span className="marca font-black">receba o valor de volta</span>. O risco é zero.
+              </p>
             </div>
-            <p className="text-[16px] leading-relaxed">
-              <strong className="titulo text-xl text-[var(--marinho)]">Garantia de <span className="text-[var(--laranja)]">7 dias</span> em todos os planos.</strong>
-              <br />
-              Se não gostar, peça o reembolso pela Kiwify dentro de 7 dias e <span className="marca font-black">receba o valor de volta</span>. O risco é zero.
-            </p>
-          </div>
+          </Revelar>
         </div>
       </section>
 
       {/* Dúvidas */}
-      <section className="bg-[var(--creme)] py-24">
+      <section className="py-24">
         <div className="mx-auto max-w-[820px] px-5 sm:px-8">
-          <div className="text-center">
-            <span className="pilula bg-[var(--amarelo)] text-[var(--tinta)]">Dúvidas</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">Perguntas frequentes</h2>
-          </div>
+          <Titulo rotulo="Dúvidas">Perguntas frequentes</Titulo>
           <div className="mt-10 space-y-3.5">
             {FAQ.map((f) => (
               <Pergunta key={f.q} q={f.q} r={f.r} />
@@ -424,40 +563,51 @@ export default function KitPage() {
       </section>
 
       {/* Chamada final */}
-      <section className="bg-[var(--amarelo)] pt-20">
-        <div className="mx-auto flex max-w-[1180px] flex-col items-center gap-10 px-5 text-center sm:px-8 lg:flex-row lg:text-left">
-          <img src={`${M}vo-prompo-festa.jpg`} alt="Vô Prompo comemorando" loading="lazy" className="w-56 rounded-[28px] border-[6px] border-white shadow-xl" />
+      <section className="pt-16">
+        <Revelar className="mx-auto flex max-w-[1180px] flex-col items-center gap-10 px-5 text-center sm:px-8 lg:flex-row lg:text-left">
+          <div className="flutuar shrink-0">
+            <img
+              src={`${M}vo-prompo-festa.jpg`}
+              alt="Vô Prompo comemorando"
+              loading="lazy"
+              className="w-56 rounded-[28px] border-2 border-[var(--amarelo)] shadow-[0_0_70px_-10px_rgba(255,194,42,0.55)]"
+            />
+          </div>
           <div>
-            <h2 className="titulo text-4xl text-[var(--tinta)] sm:text-5xl">O Vô Prompo já está de capacete. <span className="text-[var(--marinho)]">Bora construir?</span></h2>
-            <p className="mt-4 max-w-xl text-lg text-[#3a2a1c]">
-              Comece hoje com o <strong className="text-[var(--marinho)]">Melhor Kit por {reais(MELHOR.priceCents)}</strong> (de{' '}
-              <s className="decoration-[#c0392b] decoration-2">{reais(MELHOR.listPriceCents!)}</s>) e leve mais{' '}
-              <strong className="text-[var(--laranja-escuro)]">3 temas de bônus</strong>. Se não gostar, 7 dias de garantia.
+            <h2 className="titulo text-4xl text-[var(--texto)] sm:text-5xl">
+              O Vô Prompo já está de capacete. <span className="brilho-amarelo">Bora construir?</span>
+            </h2>
+            <p className="mt-4 max-w-xl text-lg text-[var(--texto-2)]">
+              Comece hoje com o <strong className="text-[var(--texto)]">Melhor Kit por {reais(MELHOR.priceCents)}</strong> (de{' '}
+              <s className="decoration-[var(--vermelho)] decoration-2">{reais(MELHOR.listPriceCents!)}</s>) e leve mais{' '}
+              <strong className="text-[var(--amarelo)]">3 temas de bônus</strong>. Se não gostar, 7 dias de garantia.
             </p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
               <a href="#planos" className="botao pulsar text-[22px]">Quero meu kit agora</a>
-              <a href="../" className="voltar px-4 py-3 text-base"><span aria-hidden="true">←</span> Voltar para a Home</a>
+              <a href="../" className="voltar px-4 py-3 text-base">
+                <span aria-hidden="true">←</span> Voltar para a Home
+              </a>
             </div>
           </div>
-        </div>
+        </Revelar>
         <footer className="mt-20">
-          <div className="chao" />
-          <div className="bg-[#a76a38] pb-24 pt-5 text-center text-sm font-extrabold text-white/90 sm:pb-6">
-            © 2026 <a href="../" className="underline">Prompta</a> · Kit Prompo-Constroe · Pagamentos pela Kiwify
+          <div className="fita h-4" aria-hidden="true" />
+          <div className="bg-[var(--noite)] pb-24 pt-6 text-center font-mono text-xs text-[var(--texto-3)] sm:pb-8">
+            © 2026 <a href="../" className="text-[var(--amarelo)] underline">Prompta</a> · Kit Prompo-Constroe · Pagamentos pela Kiwify
           </div>
         </footer>
       </section>
 
       {/* Barra fixa no celular */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-50 border-t-4 border-[var(--marinho)] bg-white px-4 py-3 shadow-[0_-6px_20px_rgba(0,0,0,0.12)] transition-transform duration-300 sm:hidden ${barra ? 'translate-y-0' : 'translate-y-full'}`}
+        className={`vidro-nav fixed inset-x-0 bottom-0 z-50 border-t border-[rgba(255,194,42,0.3)] px-4 py-3 transition-transform duration-300 sm:hidden ${barra ? 'translate-y-0' : 'translate-y-full'}`}
       >
         <div className="flex items-center justify-between gap-3">
           <div>
-            <span className="block text-xs font-extrabold text-[#6b5646]">
-              {MELHOR.name} · de <s className="decoration-[#c0392b] decoration-2">{reais(MELHOR.listPriceCents!)}</s>
+            <span className="block text-xs font-extrabold text-[var(--texto-3)]">
+              {MELHOR.name} · de <s className="decoration-[var(--vermelho)] decoration-2">{reais(MELHOR.listPriceCents!)}</s>
             </span>
-            <span className="titulo text-2xl text-[var(--laranja)]">{reais(MELHOR.priceCents)}</span>
+            <span className="titulo text-2xl text-[var(--amarelo)]">{reais(MELHOR.priceCents)}</span>
           </div>
           <a href="#planos" className="botao px-5 py-3 text-lg">Quero o kit</a>
         </div>
