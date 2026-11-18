@@ -30,42 +30,42 @@ export interface FaqItem {
 
 export const CATALOG_STATS: CatalogStat[] = [
   { value: 'Em breve', label: 'Curso de IA', detail: 'Formação do básico ao avançado em produção' },
-  { value: '4 fases', label: 'Trilha planejada', detail: 'Dos primeiros prompts até vídeo com IA' },
-  { value: '1 kit', label: 'Já disponível', detail: 'Kit Prompo-Constroe para o Claude Code' },
+  { value: '4 fases', label: 'Trilha planejada', detail: 'Dos primeiros passos até criar com IA' },
+  { value: 'Dia a dia', label: 'Foco do curso', detail: 'IA como apoio para estudar, escrever e se organizar' },
   { value: '7 dias', label: 'Garantia Kiwify', detail: 'Reembolso direto pela plataforma' },
 ];
 
 export const LEARNING_TRACKS: LearningTrack[] = [
   {
     index: '01',
-    title: 'Fundamentos & Engenharia de Prompt',
+    title: 'Primeiros Passos com IA',
     levelLabel: 'Fase 1 · Básico',
     description:
-      'Comece do zero: entenda como os modelos pensam e escreva prompts estruturados no ChatGPT, no Claude e no Gemini.',
+      'Comece do zero: entenda o que é a IA e aprenda a conversar com o ChatGPT, o Claude e o Gemini para tirar dúvidas, estudar e organizar ideias.',
     accentHex: '#2EE6D6',
   },
   {
     index: '02',
-    title: 'Automações & Fluxos Reais',
+    title: 'IA na Rotina',
     levelLabel: 'Fase 2 · Intermediário',
     description:
-      'Conecte a IA a planilhas, WhatsApp e e-mail com ferramentas como n8n e Make para tirar as tarefas repetitivas do seu dia.',
+      'Use a IA para escrever e revisar textos, montar planilhas, planejar a semana e resolver as tarefas do trabalho e da casa com mais facilidade.',
     accentHex: '#38BDF8',
   },
   {
     index: '03',
-    title: 'Agentes & Assistentes',
+    title: 'Assistentes & Ferramentas',
     levelLabel: 'Fase 3 · Avançado',
     description:
-      'Monte assistentes que consultam os seus documentos, usam ferramentas e trabalham por você em projetos reais.',
+      'Conheça assistentes que leem os seus arquivos e ferramentas que facilitam tarefas repetitivas, sempre com você no controle das decisões.',
     accentHex: '#60A5FA',
   },
   {
     index: '04',
-    title: 'Vídeo, Imagem & Produção',
-    levelLabel: 'Fase 4 · Multimídia',
+    title: 'Criação com IA',
+    levelLabel: 'Fase 4 · Criação',
     description:
-      'Produza vídeos, anúncios e imagens com IA mantendo o mesmo estilo do começo ao fim, como os vídeos do nosso kit.',
+      'Crie imagens, apresentações e vídeos com a ajuda da IA para os estudos, o trabalho ou as suas redes.',
     accentHex: '#818CF8',
   },
 ];
@@ -74,14 +74,14 @@ export const FLAGSHIP_COURSE: Course = {
   id: 'prompta-ia-completo',
   title: 'Formação Prompta: IA do Básico ao Avançado',
   subtitle:
-    'Um curso único que vai levar você do primeiro prompt até automações, agentes e criação de vídeos e imagens com IA. Estamos gravando: as inscrições abrem em breve.',
+    'Um curso para você aprender a usar a inteligência artificial do básico ao avançado, como apoio no seu dia a dia. As aulas estão sendo gravadas e as inscrições abrem em breve.',
   levelLabel: 'Básico ao Avançado',
-  tools: ['ChatGPT', 'Claude', 'Gemini', 'n8n', 'Vídeo com IA'],
+  tools: ['ChatGPT', 'Claude', 'Gemini', 'Ferramentas de imagem e vídeo'],
   outcomes: [
-    'Escrever prompts que funcionam de primeira, sem saber programar',
-    'Automatizar tarefas do dia a dia com IA e ferramentas sem código',
-    'Criar assistentes que trabalham com os seus próprios documentos',
-    'Produzir vídeos e imagens com IA para o seu negócio ou perfil',
+    'Conversar com a IA e fazer boas perguntas, sem precisar saber programar',
+    'Usar a IA para estudar, escrever e organizar a rotina',
+    'Conhecer assistentes e ferramentas que facilitam o dia a dia, com você no controle',
+    'Criar imagens e vídeos com a ajuda da IA para trabalho, estudos ou redes',
   ],
 };
 
@@ -89,7 +89,12 @@ export const FAQS: FaqItem[] = [
   {
     question: 'Quando o curso de IA da Prompta abre?',
     answer:
-      'O curso está em produção. Enquanto isso, o primeiro produto da Prompta já está disponível: o Kit Prompo-Constroe, que faz vídeos 3D de obra em corte com o Claude Code.',
+      'O curso está em produção. Ele vai ensinar a usar a IA do básico ao avançado como apoio no dia a dia, e as inscrições abrem em breve.',
+  },
+  {
+    question: 'Os prompts fazem parte do curso?',
+    answer:
+      'Não. A área de prompts é separada do curso: são kits prontos para projetos específicos, vendidos à parte. O primeiro é o Kit Prompo-Constroe.',
   },
   {
     question: 'O que é o Kit Prompo-Constroe?',

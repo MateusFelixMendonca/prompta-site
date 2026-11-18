@@ -47,8 +47,8 @@ export default function CurriculumOverview({ onSelectTrackFilter }: CurriculumOv
               Um curso completo, em 4 fases do básico ao avançado, está a caminho
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-300/85">
-              Sem dezenas de cursos soltos: você vai começar do zero em prompts e evoluir passo a
-              passo até automações, agentes e criação de vídeos com IA. Estamos gravando as aulas.
+              Sem dezenas de cursos soltos: você começa do zero e evolui passo a passo até usar a IA
+              com confiança nos estudos, no trabalho e em casa. Estamos gravando as aulas.
             </p>
           </div>
 

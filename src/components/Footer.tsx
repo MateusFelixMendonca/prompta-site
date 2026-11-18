@@ -16,7 +16,7 @@ export default function Footer() {
               Prompta
             </span>
             <p className="mt-1.5 text-xs leading-relaxed text-zinc-300/80">
-              Prompts e kits de IA prontos para usar · Curso de IA em breve · Pagamentos pela Kiwify
+              Curso de IA do básico ao avançado (em breve) · Área de prompts · Pagamentos pela Kiwify
             </p>
           </div>
 

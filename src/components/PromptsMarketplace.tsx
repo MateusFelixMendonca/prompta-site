@@ -26,14 +26,14 @@ export default function PromptsMarketplace() {
       <div className="mx-auto max-w-[1240px] px-6 sm:px-10 lg:px-14">
         <div className="max-w-3xl">
           <p className="font-mono text-xs font-medium tracking-[0.16em] text-red-400">
-            PROMPTS PRONTOS · ENTREGA PELA KIWIFY
+            ÁREA DE PROMPTS · ENTREGA PELA KIWIFY
           </p>
           <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.025em] text-white sm:text-4xl lg:text-[2.65rem] lg:leading-[1.08] [text-wrap:balance]">
-            Kits de prompts que fazem o trabalho inteiro
+            Prompts prontos para projetos específicos
           </h2>
           <p className="mt-3.5 max-w-2xl text-sm leading-relaxed text-zinc-300/90 sm:text-base">
-            Cada kit é uma linha de produção completa: você conversa com a IA e recebe o resultado
-            pronto. O primeiro já está disponível, e novos kits chegam em breve.
+            Uma área separada do curso, com kits de prompts prontos para usar com IA, cada um focado
+            em um tipo de projeto. O primeiro já está disponível e novos kits chegam em breve.
           </p>
         </div>
 

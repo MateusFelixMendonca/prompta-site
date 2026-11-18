@@ -84,8 +84,8 @@ export default function CourseCatalog({ course }: CourseCatalogProps) {
                   </span>
                 </div>
                 <p className="mt-4 text-xs leading-relaxed text-zinc-300/90">
-                  As aulas estão sendo gravadas. Enquanto isso, o primeiro kit da Prompta já está
-                  disponível e você começa a criar com IA hoje.
+                  As aulas estão sendo gravadas. Enquanto isso, a área de prompts da Prompta já
+                  está no ar.
                 </p>
               </div>
 
@@ -102,7 +102,7 @@ export default function CourseCatalog({ course }: CourseCatalogProps) {
                   onClick={() => smoothScrollToId('prompts')}
                   className="glass-btn-primary inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-xs font-semibold text-white transition-all cursor-pointer whitespace-nowrap"
                 >
-                  <span>Ver o kit disponível</span>
+                  <span>Ver a área de prompts</span>
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </div>
