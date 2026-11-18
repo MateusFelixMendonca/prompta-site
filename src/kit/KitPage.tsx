@@ -57,32 +57,74 @@ const FAQ = [
   { q: 'O kit recebe atualizações?', r: 'O kit é entregue completo, com tudo pronto para usar no dia da compra. Não depende de atualizações para funcionar.' },
 ];
 
+const reais = (c: number) => formatBRL(c).replace(',00', '');
+
+function Item({ f }: { f: string }) {
+  if (f.startsWith('Tudo do')) {
+    return (
+      <li className="flex gap-2.5 font-black text-[var(--marinho)]">
+        <span className="text-[var(--verde)]">✔</span>
+        <span>{f}</span>
+      </li>
+    );
+  }
+  if (f.startsWith('Bônus')) {
+    return (
+      <li className="flex gap-2.5 rounded-xl bg-[#fff1e3] px-2.5 py-1.5 font-black text-[var(--laranja-escuro)]">
+        <span>🎁</span>
+        <span>{f}</span>
+      </li>
+    );
+  }
+  return (
+    <li className="flex gap-2.5">
+      <span className="text-[var(--verde)]">✔</span>
+      <span>{f}</span>
+    </li>
+  );
+}
+
 function Plano({ plano }: { plano: KitPlan }) {
   const destaque = plano.recommended;
+  const avancado = plano.id === 'avancado';
+  const economia = plano.listPriceCents ? plano.listPriceCents - plano.priceCents : 0;
+  const pct = plano.listPriceCents ? Math.round((economia / plano.listPriceCents) * 100) : 0;
   return (
     <article
-      className={`cartao relative flex flex-col p-7 ${destaque ? 'ring-4 ring-[var(--laranja)] lg:-translate-y-3' : ''}`}
+      className={`cartao plano flex flex-col p-7 ${destaque ? 'plano-destaque' : ''} ${avancado ? 'plano-avancado' : ''}`}
     >
-      {destaque && (
-        <span className="pilula absolute -top-4 left-1/2 -translate-x-1/2 bg-[var(--laranja)] text-white whitespace-nowrap">
-          ⭐ Mais escolhido
+      {plano.badge && (
+        <span
+          className={`pilula absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-white ${destaque ? 'bg-[var(--laranja)]' : 'bg-[var(--marinho)]'}`}
+        >
+          {plano.badge}
         </span>
       )}
-      <h3 className="titulo text-3xl text-[var(--marinho)]">{plano.name}</h3>
+      <h3 className={`titulo text-3xl ${destaque ? 'text-[var(--laranja)]' : 'text-[var(--marinho)]'}`}>{plano.name}</h3>
       <p className="mt-1 text-sm text-[#6b5646]">{plano.tagline}</p>
       <div className="mt-5">
-        <span className="titulo text-5xl text-[var(--tinta)]">{formatBRL(plano.priceCents).replace(',00', '')}</span>
+        {plano.listPriceCents && (
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <span className="text-lg font-extrabold text-[#9a8574]">
+              de <s className="decoration-[#c0392b] decoration-[3px]">{reais(plano.listPriceCents)}</s> por
+            </span>
+            <span className="rounded-full bg-[#c0392b] px-2.5 py-0.5 text-xs font-black text-white">-{pct}%</span>
+          </div>
+        )}
+        <span className={`titulo text-5xl ${destaque ? 'text-[var(--laranja)]' : 'text-[var(--tinta)]'}`}>{reais(plano.priceCents)}</span>
         <span className="mt-1 block text-xs font-extrabold uppercase tracking-wider text-[#6b5646]">pagamento único</span>
+        {economia > 0 && (
+          <span className="mt-2 inline-block rounded-lg bg-[#e8f5e1] px-2.5 py-1 text-sm font-black text-[var(--verde)]">
+            Você economiza {reais(economia)}
+          </span>
+        )}
       </div>
       <ul className="mt-6 flex-1 space-y-2.5 text-[15px]">
         {plano.features.map((f) => (
-          <li key={f} className="flex gap-2.5">
-            <span className="text-[var(--verde)]">✔</span>
-            <span>{f}</span>
-          </li>
+          <Item key={f} f={f} />
         ))}
       </ul>
-      <a href={plano.checkoutUrl} className={`botao mt-7 w-full ${destaque ? '' : 'botao-marinho'}`}>
+      <a href={plano.checkoutUrl} className={`botao mt-7 w-full ${destaque ? 'pulsar' : 'botao-marinho'}`}>
         {plano.cta}
       </a>
     </article>
@@ -148,7 +190,12 @@ export default function KitPage() {
             Prompo<span className="text-[var(--laranja)]">-Constroe</span>
           </span>
         </a>
-        <a href="#planos" className="botao whitespace-nowrap px-3.5 py-2 text-sm sm:px-5 sm:py-2.5 sm:text-base">Quero o kit</a>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <a href="../" className="voltar px-3.5 py-2 text-base sm:px-4 sm:py-2.5 sm:text-base" aria-label="Voltar para a home da Prompta">
+            <span aria-hidden="true">←</span><span className="hidden sm:inline"> Voltar para a Home</span>
+          </a>
+          <a href="#planos" className="botao whitespace-nowrap px-3.5 py-2 text-sm sm:px-5 sm:py-2.5 sm:text-base">Quero o kit</a>
+        </div>
       </header>
 
       {/* Hero */}
@@ -159,7 +206,7 @@ export default function KitPage() {
             Vídeos 3D de obra em corte que <span className="text-[var(--laranja)]">prendem</span> até o fim.
           </h1>
           <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-[#3a2a1c]">
-            Você conversa com o Claude e o Vô Prompo constrói. Roteiro, cenas em 3D, narração sincronizada, sons, capa e legenda saem prontos para postar.
+            Você <strong className="text-[var(--marinho)]">conversa com o Claude</strong> e o Vô Prompo constrói. Roteiro, cenas em 3D, narração sincronizada, sons, capa e legenda saem <span className="marca font-black">prontos para postar</span>.
           </p>
           <ul className="mt-6 flex flex-wrap gap-2.5">
             {['Sem programar', 'Sem editar vídeo', 'Sem mostrar o rosto'].map((t) => (
@@ -168,8 +215,12 @@ export default function KitPage() {
               </li>
             ))}
           </ul>
-          <a href="#planos" className="botao mt-8 text-[22px]">Quero meu kit agora</a>
-          <p className="mt-4 text-sm font-extrabold text-[#5a4634]">
+          <a href="#planos" className="botao pulsar mt-8 text-[22px]">Quero meu kit agora</a>
+          <p className="mt-4 text-[15px] font-extrabold text-[var(--tinta)]">
+            🔥 Melhor Kit de <s className="text-[#9a8574] decoration-[#c0392b] decoration-2">{reais(MELHOR.listPriceCents!)}</s>{' '}
+            por <span className="text-lg text-[var(--laranja-escuro)]">{reais(MELHOR.priceCents)}</span>
+          </p>
+          <p className="mt-2 text-sm font-extrabold text-[#5a4634]">
             🛡️ 7 dias de garantia · acesso na hora · 🎁 3 temas de bônus
           </p>
         </div>
@@ -195,9 +246,9 @@ export default function KitPage() {
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="text-center">
             <span className="pilula bg-[var(--amarelo)] text-[var(--tinta)]">Feito com o kit</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">A terra cortada ao meio</h2>
+            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">A terra <span className="text-[var(--laranja)]">cortada ao meio</span></h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[#4a3a2c]">
-              Você vê tudo o que acontece embaixo do chão e dentro da obra, em escala, com o jeitão de brinquedo do Vô Prompo. Aperte o play e ouça com som.
+              Você vê <span className="marca font-black text-[var(--marinho)]">tudo o que acontece embaixo do chão</span> e dentro da obra, em escala, com o jeitão de brinquedo do Vô Prompo. <strong className="text-[var(--laranja-escuro)]">Aperte o play e ouça com som.</strong>
             </p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-12 sm:grid-cols-2">
@@ -205,7 +256,7 @@ export default function KitPage() {
             <Video nome="046" titulo="A Arena Castelão por dentro" legenda="Lugares reais e estádios, no Melhor Kit" />
           </div>
           <p className="mx-auto mt-12 max-w-xl text-center text-sm text-[#6b5646]">
-            Tudo isso foi feito só conversando com o Claude, com este kit. Nenhum programa de edição, nenhuma linha de código escrita à mão.
+            Tudo isso foi feito <strong className="text-[var(--marinho)]">só conversando com o Claude</strong>, com este kit. <span className="marca-laranja font-black">Nenhum programa de edição, nenhuma linha de código</span> escrita à mão.
           </p>
         </div>
       </section>
@@ -215,9 +266,9 @@ export default function KitPage() {
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="text-center">
             <span className="pilula bg-[var(--marinho)] text-white">Como funciona</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">Da ideia ao vídeo pronto, conversando</h2>
+            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">Da ideia ao vídeo pronto, <span className="text-[var(--laranja)]">conversando</span></h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[#4a3a2c]">
-              O kit é uma pasta que você abre no Claude. Ele segue a linha de montagem e você só aprova.
+              O kit é uma pasta que você abre no Claude. Ele segue a linha de montagem e <span className="marca font-black text-[var(--marinho)]">você só aprova</span>.
             </p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -237,14 +288,14 @@ export default function KitPage() {
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="text-center">
             <span className="pilula bg-[var(--amarelo)] text-[var(--tinta)]">O que vem no kit</span>
-            <h2 className="titulo mt-4 text-4xl sm:text-5xl">Uma construtora inteira numa pasta</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">Tudo pronto para abrir no Claude e começar hoje.</p>
+            <h2 className="titulo mt-4 text-4xl sm:text-5xl">Uma construtora inteira <span className="text-[var(--amarelo)]">numa pasta</span></h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">Tudo pronto para abrir no Claude e <strong className="text-[var(--amarelo)]">começar hoje</strong>.</p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {ITENS.map((i) => (
               <article key={i.t} className="rounded-[22px] border border-white/15 bg-white/[0.07] p-6">
                 <span className="text-3xl" aria-hidden="true">{i.e}</span>
-                <h3 className="titulo mt-3 text-xl">{i.t}</h3>
+                <h3 className="titulo mt-3 text-xl text-[var(--amarelo-claro)]">{i.t}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-white/80">{i.d}</p>
               </article>
             ))}
@@ -257,7 +308,7 @@ export default function KitPage() {
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="text-center">
             <span className="pilula bg-[var(--laranja)] text-white">🎁 Bônus</span>
-            <h2 className="titulo mt-4 text-4xl sm:text-5xl">Mais 3 temas, 3 canais novos</h2>
+            <h2 className="titulo mt-4 text-4xl sm:text-5xl">Mais <span className="text-[var(--laranja)]">3 temas</span>, <span className="text-[var(--amarelo)]">3 canais novos</span></h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">
               Cada tema tem o próprio personagem, o próprio visual e o mesmo jeito fácil de fazer vídeo que você já vai conhecer.
             </p>
@@ -275,7 +326,7 @@ export default function KitPage() {
             ))}
           </div>
           <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-white/70">
-            Vem no Melhor Kit e no Avançado. Cada tema traz peças 3D, personagem, fórmula do roteiro e 30 ideias de gancho.
+            Vem de <strong className="text-[var(--amarelo)]">bônus</strong> no Melhor Kit e no Avançado. Cada tema traz peças 3D, personagem, fórmula do roteiro e 30 ideias de gancho.
           </p>
         </div>
       </section>
@@ -285,7 +336,7 @@ export default function KitPage() {
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="text-center">
             <span className="pilula bg-[var(--amarelo)] text-[var(--tinta)]">Você vai precisar</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">Só três coisas</h2>
+            <h2 className="titulo mt-4 text-4xl text-[var(--marinho)] sm:text-5xl">Só <span className="text-[var(--laranja)]">três coisas</span></h2>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
@@ -327,10 +378,17 @@ export default function KitPage() {
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="text-center">
             <span className="pilula bg-[var(--marinho)] text-white">Escolha o seu plano</span>
-            <h2 className="titulo mt-4 text-4xl text-[var(--tinta)] sm:text-5xl">Comece a postar hoje</h2>
-            <p className="mx-auto mt-3 max-w-xl text-lg text-[#3a2a1c]">Pagamento único. Sem mensalidade do kit.</p>
+            <h2 className="titulo mt-4 text-4xl text-[var(--tinta)] sm:text-5xl">Comece a postar <span className="text-[var(--marinho)] underline decoration-[var(--laranja)] decoration-[6px] underline-offset-[6px]">hoje</span></h2>
+            <p className="mx-auto mt-3 max-w-xl text-lg text-[#3a2a1c]">
+              <strong className="text-[var(--marinho)]">Pagamento único.</strong> Sem mensalidade do kit.
+            </p>
+            <div className="mx-auto mt-6 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl bg-[var(--marinho)] px-5 py-3 text-white shadow-[0_5px_0_var(--marinho-escuro)]">
+              <span className="font-black">🔥 Preço de lançamento:</span>
+              <span>Melhor Kit de <s className="text-white/60 decoration-[#ff6b5b] decoration-2">{reais(MELHOR.listPriceCents!)}</s> por</span>
+              <span className="titulo text-2xl text-[var(--amarelo)]">{reais(MELHOR.priceCents)}</span>
+            </div>
           </div>
-          <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-start">
+          <div className="planos-grade mt-16 grid grid-cols-1 gap-10 lg:grid-cols-3 lg:items-start lg:gap-8">
             {KIT_PLANS.map((p) => (
               <Plano key={p.id} plano={p} />
             ))}
@@ -342,9 +400,9 @@ export default function KitPage() {
               <span className="text-[11px] font-black uppercase">dias</span>
             </div>
             <p className="text-[16px] leading-relaxed">
-              <strong className="titulo text-xl text-[var(--marinho)]">Garantia em todos os planos.</strong>
+              <strong className="titulo text-xl text-[var(--marinho)]">Garantia de <span className="text-[var(--laranja)]">7 dias</span> em todos os planos.</strong>
               <br />
-              Se não gostar, peça o reembolso pela Kiwify dentro de 7 dias e receba o valor de volta.
+              Se não gostar, peça o reembolso pela Kiwify dentro de 7 dias e <span className="marca font-black">receba o valor de volta</span>. O risco é zero.
             </p>
           </div>
         </div>
@@ -370,11 +428,16 @@ export default function KitPage() {
         <div className="mx-auto flex max-w-[1180px] flex-col items-center gap-10 px-5 text-center sm:px-8 lg:flex-row lg:text-left">
           <img src={`${M}vo-prompo-festa.jpg`} alt="Vô Prompo comemorando" loading="lazy" className="w-56 rounded-[28px] border-[6px] border-white shadow-xl" />
           <div>
-            <h2 className="titulo text-4xl text-[var(--tinta)] sm:text-5xl">O Vô Prompo já está de capacete. Bora construir?</h2>
+            <h2 className="titulo text-4xl text-[var(--tinta)] sm:text-5xl">O Vô Prompo já está de capacete. <span className="text-[var(--marinho)]">Bora construir?</span></h2>
             <p className="mt-4 max-w-xl text-lg text-[#3a2a1c]">
-              Comece hoje com o Melhor Kit e leve mais 3 temas de bônus. Se não gostar, 7 dias de garantia.
+              Comece hoje com o <strong className="text-[var(--marinho)]">Melhor Kit por {reais(MELHOR.priceCents)}</strong> (de{' '}
+              <s className="decoration-[#c0392b] decoration-2">{reais(MELHOR.listPriceCents!)}</s>) e leve mais{' '}
+              <strong className="text-[var(--laranja-escuro)]">3 temas de bônus</strong>. Se não gostar, 7 dias de garantia.
             </p>
-            <a href="#planos" className="botao mt-7 text-[22px]">Quero meu kit agora</a>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
+              <a href="#planos" className="botao pulsar text-[22px]">Quero meu kit agora</a>
+              <a href="../" className="voltar px-4 py-3 text-base"><span aria-hidden="true">←</span> Voltar para a Home</a>
+            </div>
           </div>
         </div>
         <footer className="mt-20">
@@ -391,8 +454,10 @@ export default function KitPage() {
       >
         <div className="flex items-center justify-between gap-3">
           <div>
-            <span className="block text-xs font-extrabold text-[#6b5646]">{MELHOR.name}</span>
-            <span className="titulo text-2xl text-[var(--tinta)]">{formatBRL(MELHOR.priceCents).replace(',00', '')}</span>
+            <span className="block text-xs font-extrabold text-[#6b5646]">
+              {MELHOR.name} · de <s className="decoration-[#c0392b] decoration-2">{reais(MELHOR.listPriceCents!)}</s>
+            </span>
+            <span className="titulo text-2xl text-[var(--laranja)]">{reais(MELHOR.priceCents)}</span>
           </div>
           <a href="#planos" className="botao px-5 py-3 text-lg">Quero o kit</a>
         </div>

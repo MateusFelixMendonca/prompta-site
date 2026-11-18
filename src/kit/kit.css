@@ -109,6 +109,77 @@ body {
   background: linear-gradient(#5cba3c 0 7px, #a76a38 7px);
 }
 
+/* Marca-texto: destaca palavras-chave sobre fundo claro */
+.marca {
+  background: linear-gradient(transparent 55%, var(--amarelo-claro) 55%);
+  padding: 0 2px;
+}
+.marca-laranja {
+  background: linear-gradient(transparent 58%, rgba(255, 122, 26, 0.28) 58%);
+  padding: 0 2px;
+}
+
+/* Cards de plano: foco ao passar o mouse */
+.plano {
+  position: relative;
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.28s ease, opacity 0.28s ease, filter 0.28s ease;
+}
+.plano-destaque {
+  box-shadow: 0 0 0 4px var(--laranja), 0 18px 40px rgba(255, 122, 26, 0.35);
+}
+.plano-avancado {
+  box-shadow: 0 0 0 3px var(--marinho), 0 5px 0 rgba(36, 23, 13, 0.1);
+}
+@media (min-width: 1024px) {
+  .plano-destaque { transform: translateY(-14px); }
+}
+@media (hover: hover) {
+  .plano-destaque:hover {
+    transform: translateY(-18px) scale(1.045);
+    box-shadow: 0 0 0 5px var(--laranja), 0 30px 60px rgba(255, 122, 26, 0.5);
+    z-index: 3;
+  }
+  .plano-avancado:hover {
+    transform: translateY(-10px) scale(1.04);
+    box-shadow: 0 0 0 4px var(--marinho), 0 28px 55px rgba(20, 31, 54, 0.45);
+    z-index: 3;
+  }
+  .planos-grade:has(.plano-destaque:hover, .plano-avancado:hover) .plano:not(:hover) {
+    opacity: 0.6;
+    filter: saturate(0.6);
+  }
+}
+
+/* Botão que pulsa para chamar o clique */
+.pulsar {
+  animation: pulsar 2.2s ease-in-out infinite;
+}
+@keyframes pulsar {
+  0%, 100% { box-shadow: 0 6px 0 var(--laranja-escuro), 0 0 0 0 rgba(255, 122, 26, 0.55); }
+  50% { box-shadow: 0 6px 0 var(--laranja-escuro), 0 0 0 14px rgba(255, 122, 26, 0); }
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--marinho);
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 3px 0 rgba(36, 23, 13, 0.15);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.voltar:hover {
+  background: var(--creme);
+  transform: translateX(-2px);
+}
+.voltar:focus-visible {
+  outline: 3px solid var(--marinho);
+  outline-offset: 2px;
+}
+
 .balancar {
   animation: balancar 3.2s ease-in-out infinite;
 }
@@ -121,5 +192,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .balancar { animation: none; }
+  .balancar, .pulsar { animation: none; }
+  .plano { transition: none; }
 }

@@ -3,6 +3,10 @@ export interface KitPlan {
   name: string;
   tagline: string;
   priceCents: number;
+  /** Preço "de" mostrado riscado (âncora de desconto). */
+  listPriceCents?: number;
+  /** Selo no topo do card. */
+  badge?: string;
   checkoutUrl: string;
   recommended?: boolean;
   features: string[];
@@ -42,6 +46,8 @@ export const KIT_PLANS: KitPlan[] = [
     name: 'Melhor Kit',
     tagline: 'O kit inteiro + 3 temas de bônus',
     priceCents: 6700,
+    listPriceCents: 11700,
+    badge: '⭐ Mais escolhido',
     checkoutUrl: 'https://pay.kiwify.com.br/UKJXjcO',
     recommended: true,
     cta: 'Quero o Melhor Kit',
@@ -60,6 +66,7 @@ export const KIT_PLANS: KitPlan[] = [
     name: 'Avançado',
     tagline: 'Para transformar o perfil em canal',
     priceCents: 14700,
+    badge: '🚀 Mais completo',
     checkoutUrl: 'https://pay.kiwify.com.br/MShzKxj',
     cta: 'Quero o Avançado',
     features: [

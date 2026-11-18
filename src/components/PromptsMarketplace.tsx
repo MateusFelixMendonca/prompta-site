@@ -1,12 +1,11 @@
 import { ArrowRight, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { MouseEvent } from 'react';
-import imgKitPrompo from '../assets/images/kit-prompo-constroe.jpg';
 import { PROMPT_PACKS } from '../data/prompts';
 import { formatBRL } from '../utils/checkout';
 
 const PREVIEW_IMAGES: Record<string, string> = {
-  'kit-prompo-constroe': imgKitPrompo,
+  'kit-prompo-constroe': 'media/vo-prompo.jpg',
 };
 
 export default function PromptsMarketplace() {
@@ -60,20 +59,20 @@ export default function PromptsMarketplace() {
               <a
                 href={pack.href}
                 aria-label={`Ver a página do ${pack.title}`}
-                className="relative min-h-[260px] w-full overflow-hidden bg-gradient-to-br from-red-950/70 via-[#15070c] to-[#050307] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-400"
+                className="relative min-h-[320px] w-full overflow-hidden bg-gradient-to-br from-red-950/70 via-[#15070c] to-[#050307] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-400"
               >
                 <img
                   src={PREVIEW_IMAGES[pack.id]}
-                  alt="Cena de um vídeo feito com o Kit Prompo-Constroe: prédio em corte durante um terremoto"
+                  alt="Vô Prompo, o mascote do Kit Prompo-Constroe, acenando na frente de uma casa"
                   loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                  className="absolute inset-0 h-full w-full object-cover object-[center_40%] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                 />
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent"
                 />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-4 py-3 text-[11px] font-mono text-zinc-200/95">
-                  <span>Feito com o kit</span>
+                  <span>Conheça o Vô Prompo</span>
                   <span className="text-red-300">Ver vídeos</span>
                 </div>
               </a>
